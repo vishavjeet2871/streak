@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from 'react';
+import { useRef, useState } from 'react';
 import { Bell, Database, Download, FileJson, FileSpreadsheet, Monitor, Moon, Smartphone, Sparkles, Sun, Trash2, Upload } from 'lucide-react';
 import type { ThemePref } from '../types';
 import { useData } from '../hooks/useData';
@@ -13,6 +13,9 @@ import { Segmented } from '../components/ui/Segmented';
 import { Switch } from '../components/ui/Switch';
 import { useToast } from '../components/ui/Toast';
 import { useConfirm } from '../components/ui/Confirm';
+import { Group, Row } from '../components/ui/SettingsGroup';
+import { SyncSettings } from '../components/sync/SyncSettings';
+import { useCloud } from '../hooks/useCloud';
 
 const DAY_START_OPTIONS = [0, 1, 2, 3, 4, 5];
 const hourLabel = (h: number) => (h === 0 ? 'Midnight' : `${h}:00 AM`);
@@ -23,6 +26,8 @@ export function SettingsPage() {
   const confirm = useConfirm();
   const loadDemo = useLoadDemo();
   const { canInstall, install, installed, ios } = useInstallPrompt();
+  const { signedIn } = useCloud();
+  const everywhere = signedIn ? ' This also applies to your other synced devices.' : '';
   const fileRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(settings.name);
   const [permission, setPermission] = useState(() => (notificationsSupported() ? Notification.permission : 'denied'));
@@ -47,7 +52,7 @@ export function SettingsPage() {
   const onImport = async (file: File) => {
     const ok = await confirm({
       title: 'Restore from backup?',
-      message: `This replaces your ${habits.length} habit${habits.length === 1 ? '' : 's'} and their history with the contents of “${file.name}”.`,
+      message: `This replaces your ${habits.length} habit${habits.length === 1 ? '' : 's'} and their history with the contents of “${file.name}”.${everywhere}`,
       confirmLabel: 'Replace my data',
       danger: true,
     });
@@ -63,7 +68,9 @@ export function SettingsPage() {
   const wipe = async () => {
     const ok = await confirm({
       title: 'Delete all data?',
-      message: 'Every habit and check-in on this device will be erased. This can’t be undone, so export a backup first.',
+      message: signedIn
+        ? 'Every habit and check-in will be erased from this device, your other synced devices, and your sync account. This can’t be undone, so export a backup first.'
+        : 'Every habit and check-in on this device will be erased. This can’t be undone, so export a backup first.',
       confirmLabel: 'Delete everything',
       danger: true,
     });
@@ -76,6 +83,8 @@ export function SettingsPage() {
     <>
       <PageHeader title="Settings" />
       <div className="max-w-2xl space-y-4">
+        <SyncSettings />
+
         <Group title="Appearance">
           <Row label="Theme" hint="Dark is the default when your system is dark.">
             <Segmented<ThemePref>
@@ -176,8 +185,10 @@ export function SettingsPage() {
 
         <Group title="Data" icon={<Database size={15} />}>
           <p className="px-4 pt-3 text-[13px] text-muted sm:px-5">
-            Everything lives in this browser’s storage: {habits.length} habit{habits.length === 1 ? '' : 's'},{' '}
-            {entries.length} check-ins. Nothing is sent anywhere. Back up now and then, especially before clearing browser data.
+            {habits.length} habit{habits.length === 1 ? '' : 's'}, {entries.length} check-ins on this device.{' '}
+            {signedIn
+              ? 'Synced to your account, so a new device gets everything when you sign in.'
+              : 'Stored only in this browser. Back up now and then, especially before clearing browser data.'}
           </p>
           <Row label="Backup" hint="A JSON file you can restore on any device.">
             <div className="flex flex-wrap justify-end gap-2">
@@ -233,29 +244,5 @@ export function SettingsPage() {
         <p className="pt-4 text-center text-[12px] text-faint">Streak 1.0 · made for showing up every day</p>
       </div>
     </>
-  );
-}
-
-function Group({ title, icon, children }: { title: string; icon?: ReactNode; children: ReactNode }) {
-  return (
-    <section className="card overflow-hidden">
-      <h2 className="flex items-center gap-2 border-b border-line px-4 py-3 text-[13px] font-semibold text-muted sm:px-5">
-        {icon}
-        {title}
-      </h2>
-      <div className="divide-y divide-line">{children}</div>
-    </section>
-  );
-}
-
-function Row({ label, hint, children }: { label: ReactNode; hint?: ReactNode; children?: ReactNode }) {
-  return (
-    <div className="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-5">
-      <div className="min-w-0">
-        <div className="text-[14px] font-medium">{label}</div>
-        {hint && <div className="mt-0.5 text-[12.5px] leading-snug text-muted">{hint}</div>}
-      </div>
-      {children && <div className="shrink-0">{children}</div>}
-    </div>
   );
 }

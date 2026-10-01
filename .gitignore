@@ -8,3 +8,7 @@ dev-dist
 
 # Local editor/agent config
 .claude/
+
+# Dexie Cloud CLI credentials (never commit the key)
+dexie-cloud.key
+dexie-cloud.json

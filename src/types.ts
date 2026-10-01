@@ -45,8 +45,8 @@ export interface Entry {
 
 export type ThemePref = 'system' | 'light' | 'dark';
 
+/** App settings as the UI sees them. Stored split: `name`/`dayStartHour` sync across devices, the rest stays on this device. */
 export interface Settings {
-  key: 'settings';
   name: string;
   theme: ThemePref;
   /** Hour (0–5) at which a new day begins, so late nights count toward the previous day. */

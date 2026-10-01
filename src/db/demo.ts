@@ -1,6 +1,6 @@
 import type { DateKey, Entry, Habit } from '../types';
 import { addDays, eachDay, startOfWeek, weekday } from '../utils/dates';
-import { entryId } from '../utils/id';
+import { entryId, newId } from '../utils/id';
 import { seededRandom } from '../utils/random';
 
 interface DemoSpec {
@@ -140,7 +140,12 @@ const SPECS: DemoSpec[] = [
  */
 export function generateDemoData(
   today: DateKey,
-  { seed = 7, now = Date.now() }: { seed?: number; now?: number } = {},
+  {
+    seed = 7,
+    now = Date.now(),
+    // Synced IDs must be globally unique, so every demo load gets its own suffix.
+    idSuffix = newId().slice(0, 8),
+  }: { seed?: number; now?: number; idSuffix?: string } = {},
 ): { habits: Habit[]; entries: Entry[] } {
   const rand = seededRandom(seed);
   const habits: Habit[] = [];
@@ -152,7 +157,15 @@ export function generateDemoData(
 
   SPECS.forEach((spec, order) => {
     const startDate = addDays(today, -spec.daysAgo);
-    const h: Habit = { ...spec.habit, startDate, order, archivedAt: null, createdAt: now, updatedAt: now };
+    const h: Habit = {
+      ...spec.habit,
+      id: `${spec.habit.id}-${idSuffix}`,
+      startDate,
+      order,
+      archivedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
     habits.push(h);
     const days = eachDay(startDate, addDays(today, -1));
     const runStart = spec.recentRun ? addDays(today, -spec.recentRun) : null;

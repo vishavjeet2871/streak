@@ -18,6 +18,8 @@ import { StarterSuggestions } from '../components/habits/StarterSuggestions';
 import { ProgressRing } from '../components/ui/ProgressRing';
 import { AnimatedNumber } from '../components/ui/AnimatedNumber';
 import { Logo } from '../components/layout/Logo';
+import { SyncBadge } from '../components/sync/SyncBadge';
+import { DuplicatesBanner } from '../components/habits/DuplicatesBanner';
 
 export function TodayPage() {
   const { habits, activeHabits, index, today, streaks, settings, values } = useData();
@@ -105,14 +107,19 @@ export function TodayPage() {
 
   return (
     <div>
-      <header className="mb-6 md:mb-8">
-        <p className="text-[13px] font-medium text-muted">
-          {formatDate(today, { weekday: 'long', day: 'numeric', month: 'long' })}
-        </p>
-        <h1 className="mt-1 text-[28px] font-semibold leading-tight tracking-tight md:text-[34px]">
-          {greeting(new Date().getHours(), settings.name)}
-        </h1>
+      <header className="mb-6 flex items-start justify-between gap-3 md:mb-8">
+        <div className="min-w-0">
+          <p className="text-[13px] font-medium text-muted">
+            {formatDate(today, { weekday: 'long', day: 'numeric', month: 'long' })}
+          </p>
+          <h1 className="mt-1 text-[28px] font-semibold leading-tight tracking-tight md:text-[34px]">
+            {greeting(new Date().getHours(), settings.name)}
+          </h1>
+        </div>
+        <SyncBadge compact className="-mr-1.5 shrink-0 md:hidden" />
       </header>
+
+      <DuplicatesBanner />
 
       {habits.length === 0 ? (
         <EmptyState />

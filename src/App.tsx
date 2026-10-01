@@ -12,6 +12,7 @@ import { Sidebar } from './components/layout/Sidebar';
 import { BottomNav } from './components/layout/BottomNav';
 import { ShortcutsHelp } from './components/ShortcutsHelp';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { SyncDialog } from './components/sync/SyncDialog';
 import { TodayPage } from './pages/TodayPage';
 
 // Today is the landing page and ships in the main bundle; the rest (and Recharts) load on demand.
@@ -92,6 +93,7 @@ function Shell() {
       </main>
       <BottomNav page={route.page} />
       <ShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <SyncDialog />
     </div>
   );
 }

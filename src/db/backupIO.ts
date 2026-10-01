@@ -1,4 +1,5 @@
-import { db, DEFAULT_SETTINGS } from './db';
+import { db, DEFAULT_SETTINGS, DEVICE_PREFS_KEY, SYNCED_SETTINGS_KEY } from './db';
+import type { Entry, Habit } from '../types';
 import { replaceAllData, saveSettings } from './repo';
 import { createBackup, parseBackup, toCSV } from '../utils/backup';
 import { todayKey } from '../utils/dates';
@@ -14,14 +15,41 @@ export function downloadFile(filename: string, content: string, type: string): v
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+const cleanHabit = (h: Habit): Habit => ({
+  id: h.id,
+  name: h.name,
+  emoji: h.emoji,
+  color: h.color,
+  kind: h.kind,
+  target: h.target,
+  unit: h.unit,
+  step: h.step,
+  frequency: h.frequency,
+  startDate: h.startDate,
+  freezes: h.freezes,
+  order: h.order,
+  archivedAt: h.archivedAt,
+  createdAt: h.createdAt,
+  updatedAt: h.updatedAt,
+});
+
+const cleanEntry = ({ id, habitId, date, value, updatedAt }: Entry): Entry => ({ id, habitId, date, value, updatedAt });
+
 export async function exportJSON(): Promise<void> {
-  const [habits, entries, settings] = await Promise.all([
+  const [habits, entries, synced, device] = await Promise.all([
     db.habits.toArray(),
     db.entries.toArray(),
-    db.settings.get('settings'),
+    db.settings.get(SYNCED_SETTINGS_KEY),
+    db.prefs.get(DEVICE_PREFS_KEY),
   ]);
-  const { key: _key, reminderEnabled: _r, ...portable } = settings ?? DEFAULT_SETTINGS;
-  const backup = createBackup(habits, entries, portable);
+  const portable = {
+    name: synced?.name ?? DEFAULT_SETTINGS.name,
+    dayStartHour: synced?.dayStartHour ?? DEFAULT_SETTINGS.dayStartHour,
+    theme: device?.theme ?? DEFAULT_SETTINGS.theme,
+    reminderTime: device?.reminderTime ?? DEFAULT_SETTINGS.reminderTime,
+  };
+  // Drop sync bookkeeping (owner, realmId, $ts) so backups stay portable.
+  const backup = createBackup(habits.map(cleanHabit), entries.map(cleanEntry), portable);
   downloadFile(`streak-backup-${todayKey()}.json`, JSON.stringify(backup, null, 2), 'application/json');
 }
 

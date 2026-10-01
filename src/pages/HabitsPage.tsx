@@ -25,6 +25,7 @@ import { StreakBadge } from '../components/habits/StreakBadge';
 import { StarterSuggestions } from '../components/habits/StarterSuggestions';
 import { useConfirm } from '../components/ui/Confirm';
 import { useToast } from '../components/ui/Toast';
+import { DuplicatesBanner } from '../components/habits/DuplicatesBanner';
 
 export function HabitsPage() {
   const { activeHabits, archivedHabits } = useData();
@@ -66,6 +67,8 @@ export function HabitsPage() {
           </button>
         }
       />
+
+      <DuplicatesBanner />
 
       {ordered.length > 0 ? (
         <DndContext

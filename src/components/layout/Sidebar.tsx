@@ -5,6 +5,7 @@ import { useHabitEditor } from '../../hooks/useHabitEditor';
 import { useInstallPrompt } from '../../hooks/useInstallPrompt';
 import { cn } from '../../utils/cn';
 import { Logo } from './Logo';
+import { SyncBadge } from '../sync/SyncBadge';
 import { NAV_ITEMS } from './nav';
 
 export function Sidebar({ page, onShowShortcuts }: { page: Page; onShowShortcuts: () => void }) {
@@ -53,6 +54,7 @@ export function Sidebar({ page, onShowShortcuts }: { page: Page; onShowShortcuts
       </button>
 
       <div className="mt-auto flex flex-col gap-1">
+        <SyncBadge />
         {canInstall && (
           <button type="button" className="btn btn-ghost justify-start" onClick={install}>
             <Download size={16} />
